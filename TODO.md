@@ -6,6 +6,7 @@
 - [x] 确定使用 ROS 2 Humble 与 Gazebo Fortress。
 - [x] 使用 `colcon build` 验证项目骨架。
 - [x] 替换功能包中的临时维护者邮箱。
+- [x] 完成首次 Git 提交并通过 SSH 推送到 GitHub。
 - [ ] 创建第一个 C++ 发布者与订阅者学习任务。
 
 ## 后续任务

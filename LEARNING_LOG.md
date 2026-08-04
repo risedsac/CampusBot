@@ -16,3 +16,10 @@
 - 修复了 CMake 注释误用 `//` 而不是 `#` 导致的解析错误。
 - 观察到构建前 source 当前工作空间可能触发 underlay 同名功能包覆盖警告。
 - 在 `AMENT_PREFIX_PATH` 只包含 `/opt/ros/humble` 的环境中成功完成重新构建。
+
+### Git 与 GitHub
+
+- 完成首次本地提交，并理解工作区、暂存区和提交之间的关系。
+- 生成 Ed25519 SSH 密钥，将公钥添加到 GitHub，并通过 `ssh -T git@github.com` 验证身份。
+- 将远程地址从 HTTPS 切换为 SSH，成功把本地 `main` 推送到 `origin/main`。
+- 理解私钥必须保留在本机，只有 `.pub` 公钥可以上传。
