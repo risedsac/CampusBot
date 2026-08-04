@@ -1,0 +1,22 @@
+# colcon build outputs
+build/
+install/
+log/
+
+# C++ and Python generated files
+compile_commands.json
+__pycache__/
+*.py[cod]
+
+# Editors and operating systems
+.vscode/
+.idea/
+*~
+.DS_Store
+
+# Runtime and benchmark outputs
+results/*.csv
+results/*.png
+results/*.pdf
+*.bag
+*.db3
