@@ -14,15 +14,26 @@ find_package(std_msgs REQUIRED)
 
 add_executable(task_status_publisher
     src/task_status_publisher.cpp
-  )
+)
+add_executable(task_status_subscriber
+    src/task_status_subscriber.cpp
+)
 
-  ament_target_dependencies(task_status_publisher
+
+ament_target_dependencies(task_status_publisher
+    rclcpp
+    std_msgs
+  )
+ament_target_dependencies(task_status_subscriber
     rclcpp
     std_msgs
   )
 
+
+
   install(TARGETS
     task_status_publisher
+    task_status_subscriber
     DESTINATION lib/${PROJECT_NAME}
   )
 ament_package()
