@@ -1,13 +1,19 @@
 # 待办事项
 
-## 当前里程碑：项目骨架
+## 当前里程碑：ROS 2 基本通信
 
 - [x] 检查主机开发环境。
 - [x] 确定使用 ROS 2 Humble 与 Gazebo Fortress。
 - [x] 使用 `colcon build` 验证项目骨架。
 - [x] 替换功能包中的临时维护者邮箱。
 - [x] 完成首次 Git 提交并通过 SSH 推送到 GitHub。
-- [ ] 创建第一个 C++ 发布者与订阅者学习任务。
+- [x] 创建 `campusbot_task_manager` C++ 功能包。
+- [x] 实现并验证任务状态 Publisher。
+- [x] 实现并验证任务状态 Subscriber。
+- [x] 生成 clangd 所需的 `compile_commands.json`。
+- [ ] 清理 Subscriber 的冗余头文件和日志拼写。
+- [ ] 将 Publisher 发布周期改为 ROS 2 Parameter。
+- [ ] 使用 Launch 同时启动 Publisher 和 Subscriber。
 
 ## 后续任务
 
