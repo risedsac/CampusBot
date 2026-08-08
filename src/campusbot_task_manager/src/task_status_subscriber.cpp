@@ -1,9 +1,5 @@
-#include <rclcpp/create_subscription.hpp>
 #include <memory>
-#include <rclcpp/executors.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/subscription.hpp>
-#include <std_msgs/msg/detail/string__struct.hpp>
 #include <std_msgs/msg/string.hpp>
 class task_status_subscriber:public rclcpp::Node{
     public:
@@ -11,7 +7,7 @@ class task_status_subscriber:public rclcpp::Node{
     private:
         //回调函数
         void subscriber_status(const std_msgs::msg::String::ConstSharedPtr msg){
-            RCLCPP_INFO(this->get_logger(),"I heared '%s'",msg->data.c_str());
+            RCLCPP_INFO(this->get_logger(),"Received '%s'",msg->data.c_str());
         }
         //消息对象本身是只读的，内容不可变
         rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscriber_;
