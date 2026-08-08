@@ -98,3 +98,65 @@
 1. 清理 Subscriber 的内部实现头文件与日志拼写。
 2. 将 Publisher 的发布周期改为可校验的 ROS 2 Parameter。
 3. 如果参数化已充分理解，再创建最小 Launch 文件。
+
+## 2026-08-08——第 3 天
+
+### 今日目标
+
+1. 清理 Subscriber 的头文件和日志，恢复 Publisher/Subscriber 数据流知识。
+2. 将 Publisher 的发布周期改为可校验的 ROS 2 Parameter。
+3. 如果 Parameter 已充分理解，再创建最小 Launch 文件；不为赶进度强行完成。
+
+### 今日成果
+
+- Subscriber 只依赖必要的公开头文件，并能通过无警告构建。
+- Publisher 默认以 1000 ms 周期运行，也能用命令行参数改为 200 ms。
+- 对 0 或负数周期明确报错，不用隐式回退值掩盖错误输入。
+- 能解释参数的声明、默认值、启动覆盖和运行期动态修改之间的区别。
+
+### 今日知识点
+
+- C++ 语法：`const auto`、整数类型、参数检查与异常、显式头文件依赖。
+- 数据结构与算法：复习哈希表，对比两数之和的暴力方案与哈希表方案。
+- ROS 2：Parameter 声明与读取、CLI 覆盖、参数类型、Timer 的创建时机。
+- Linux 与工具：在 zsh 中加载 `setup.zsh`，使用 `ros2 param` 和 `ros2 topic hz` 验证运行参数。
+- 面试知识：为什么参数优于硬编码，以及为什么修改参数不一定会自动重建 Timer。
+
+### 今日步骤
+
+1. 20 分钟：清理 Subscriber，重新构建并运行 Publisher/Subscriber。
+2. 20～40 分钟：理解 Parameter 的输入、输出、类型与启动覆盖。
+3. 30～60 分钟：亲自实现发布周期参数化和非法输入检查。
+4. 20～40 分钟：编译、运行，并对 1000 ms、200 ms、0 ms 和负数输入分别验证。
+5. 20～40 分钟：视理解情况完成 Launch 或进行知识复盘。
+
+### 今日验收标准
+
+- `campusbot_task_manager` 构建成功且无编译警告。
+- 默认启动时测得发布频率约为 1 Hz。
+- 传入 `publish_period_ms:=200` 时测得发布频率约为 5 Hz。
+- 传入非法周期时节点明确报错并退出。
+- 能不看代码说出 Parameter 数据如何变成 Timer 周期。
+
+### 验收结果
+
+- [x] Subscriber 使用必要的公开头文件，功能包构建成功。
+- [x] 默认 1000 ms 和覆盖为 200 ms 的发布周期均通过运行验证。
+- [x] 0 ms 和负数输入会输出明确错误并以非零状态退出。
+- [x] Launch 文件成功安装，并以 500 ms 参数同时启动 Publisher 和 Subscriber。
+- [x] 能解释 Parameter 存储值、局部变量和 Timer 周期之间的区别。
+
+### 当日复盘
+
+- 已完成：Subscriber 清理、发布周期参数化、非法输入处理、最小 Launch、构建和运行验证。
+- 尚未完成：两数之和算法题和本日面试题，保留为本次学习的最后两个环节。
+- 典型错误：误用 `--cmake-flags`，Launch 中将 `executable` 拼错，并曾写错 Subscriber 的包名。
+- 根本原因：尚未完全熟悉 colcon 参数名称，以及 Launch 中包名、可执行程序名和节点名的对应关系。
+- 已掌握：启动参数覆盖默认值、Timer 创建时机、Launch 文件安装位置和多节点统一启动。
+- 仍需巩固：动态参数更新机制、QoS、Service、Action 和多种 Executor。
+
+### 下一学习日方向
+
+1. 创建最小 URDF/Xacro 机器人模型。
+2. 理解 `base_link`、关节和 TF 父子关系。
+3. 使用 `robot_state_publisher` 在 RViz2 中显示模型。

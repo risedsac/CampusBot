@@ -36,4 +36,10 @@ ament_target_dependencies(task_status_subscriber
     task_status_subscriber
     DESTINATION lib/${PROJECT_NAME}
   )
+  install(
+      DIRECTORY
+    launch
+    DESTINATION share/${PROJECT_NAME}
+
+  )
 ament_package()

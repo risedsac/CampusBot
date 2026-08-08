@@ -55,3 +55,35 @@
 - 不看提示画出“Publisher Executor → DDS/RMW → Subscriber Executor”数据流。
 - 深入理解 QoS 的 History、Depth、Reliability 和 Durability。
 - 理解参数声明、默认值、启动覆盖与运行期动态更新的区别。
+
+## 2026-08-08——Parameter 与 Launch
+
+### 已完成
+
+- 将 Publisher 的发布周期声明为整数类型 ROS 2 Parameter，默认值为 1000 ms。
+- 使用命令行把周期覆盖为 200 ms，并通过日志和 Topic 频率验证约为 5 Hz。
+- 对 0 ms 和负数周期进行输入检查，节点输出明确错误并以非零状态退出。
+- 编写 `task_status.launch.py`，一次启动 Publisher 和 Subscriber，并在 Launch 中传入 500 ms 周期。
+- 在 CMake 中安装 Launch 目录，在 `package.xml` 中声明 `launch` 和 `launch_ros` 运行依赖。
+
+### 验证证据
+
+- `campusbot_task_manager` 使用 `-Wall -Wextra -Wpedantic` 构建通过。
+- 默认 1000 ms、命令行覆盖 200 ms、非法的 0 ms 和负数输入均完成实际运行验证。
+- `ros2 launch campusbot_task_manager task_status.launch.py` 成功启动两个进程。
+- Launch 日志显示发布周期为 500 ms，Publisher 和 Subscriber 的消息一一对应。
+- 使用 `Ctrl+C` 后两个节点均正常退出。
+
+### 关键理解
+
+- Parameter 的存储值、构造函数中读取出的局部变量和已经创建的 Timer 是三个不同层次的状态。
+- 运行期间修改 Parameter 不会自动重建 Timer；动态生效需要参数回调和明确的 Timer 更新逻辑。
+- Launch 中传入的参数会覆盖节点声明 Parameter 时使用的默认值。
+- Launch 文件需要安装到功能包的 `share` 目录，ROS 2 才能通过包索引定位它。
+- Launch 中的包名、可执行程序名和节点名来源不同，不能混为一谈。
+
+### 仍需继续巩固
+
+- ROS 2 动态参数回调的注册、校验和线程安全问题。
+- Launch 参数、节点重命名、命名空间和条件启动。
+- QoS 策略以及 Service、Action 与 Topic 的适用场景。

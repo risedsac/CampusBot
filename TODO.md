@@ -11,9 +11,9 @@
 - [x] 实现并验证任务状态 Publisher。
 - [x] 实现并验证任务状态 Subscriber。
 - [x] 生成 clangd 所需的 `compile_commands.json`。
-- [ ] 清理 Subscriber 的冗余头文件和日志拼写。
-- [ ] 将 Publisher 发布周期改为 ROS 2 Parameter。
-- [ ] 使用 Launch 同时启动 Publisher 和 Subscriber。
+- [x] 清理 Subscriber 的冗余头文件和日志拼写。
+- [x] 将 Publisher 发布周期改为 ROS 2 Parameter。
+- [x] 使用 Launch 同时启动 Publisher 和 Subscriber。
 
 ## 后续任务
 
