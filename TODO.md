@@ -1,6 +1,6 @@
 # 待办事项
 
-## 当前里程碑：ROS 2 基本通信
+## 已完成里程碑：ROS 2 基本通信
 
 - [x] 检查主机开发环境。
 - [x] 确定使用 ROS 2 Humble 与 Gazebo Fortress。
@@ -15,9 +15,20 @@
 - [x] 将 Publisher 发布周期改为 ROS 2 Parameter。
 - [x] 使用 Launch 同时启动 Publisher 和 Subscriber。
 
+## 当前里程碑：机器人模型与 TF
+
+- [x] 创建包含 `base_footprint` 和 `base_link` 的最小 Xacro 模型。
+- [x] 使用 `xacro` 和 `check_urdf` 验证模型语法与树结构。
+- [x] 使用 `robot_state_publisher` 发布固定 TF。
+- [x] 在 RViz2 中显示底盘外观。
+- [x] 使用 description 包的 Launch 启动 `robot_state_publisher`。
+- [ ] 添加底盘的碰撞模型与惯性参数。
+- [ ] 添加左右驱动轮和辅助轮。
+- [ ] 保存可移植的 RViz2 配置并接入 Launch。
+
 ## 后续任务
 
-- [ ] 创建差速机器人描述。
+- [ ] 完成差速机器人描述。
 - [ ] 接入 Gazebo 传感器与差速驱动。
 - [ ] 集成 slam_toolbox 与 Nav2。
 - [ ] 实现任务管理、路径规划和自动化评测功能包。

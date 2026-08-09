@@ -97,3 +97,42 @@
 - ROS 2 动态参数回调的注册、校验和线程安全问题。
 - Launch 参数、节点重命名、命名空间和条件启动。
 - QoS 策略以及 Service、Action 与 Topic 的适用场景。
+
+## 2026-08-09——URDF/Xacro、TF 与 RViz2
+
+### 已完成
+
+- 创建 `campusbot.urdf.xacro`，定义地面投影坐标系 `base_footprint` 和底盘坐标系 `base_link`。
+- 使用固定关节连接两个 Link，并将底盘中心设置在地面上方 0.10 m。
+- 为 `base_link` 添加尺寸为 0.50 m × 0.35 m × 0.20 m 的蓝色长方体外观。
+- 使用 `xacro` 生成普通 URDF，使用 `check_urdf` 验证根 Link 和子 Link。
+- 使用 `robot_state_publisher` 发布固定 TF，并在 RViz2 中显示模型。
+- 创建 `display.launch.py`，通过 `FindPackageShare`、`PathJoinSubstitution` 和 `Command` 在启动时展开 Xacro。
+
+### 验证证据
+
+- `check_urdf` 输出 `Successfully Parsed XML`，根 Link 为 `base_footprint`，子 Link 为 `base_link`。
+- `tf2_echo base_footprint base_link` 实测平移为 `[0, 0, 0.1]`，旋转为单位四元数。
+- RViz2 以 `base_footprint` 为固定坐标系，成功显示蓝色底盘。
+- `ros2 launch campusbot_description display.launch.py` 成功启动 `robot_state_publisher` 并解析两个 Segment。
+
+### 排错与实验
+
+- 修复 XML 属性之间误用逗号、`geometry` 拼写错误、三维数值误用逗号和缺少 `</robot>` 等问题。
+- 发现当前 Humble 运行方式没有 `/robot_description` Topic，改由 RViz2 的 File 模式读取生成的 URDF。
+- 主动将固定关节高度从 0.10 m 改为 0 m，观察底盘中心与地面重合的效果，之后恢复为 0.10 m。
+- 理解 `got segment` 只能证明结构解析成功，不能证明坐标数值符合设计意图。
+
+### 关键理解
+
+- Joint 的 `origin` 描述 Child Link 相对 Parent Link 的位姿；Visual 的 `origin` 描述几何体相对所属 Link 的位姿。
+- Frame 是坐标系，Transform 是两个 Frame 之间的平移和旋转，TF2 负责维护和查询这些变换。
+- 固定关系发布到 `/tf_static`，运动过程中变化的关系通常发布到 `/tf`。
+- `FindPackageShare` 从安装空间定位功能包资源，避免硬编码本机绝对路径。
+- RViz2 显示 RobotModel 同时需要模型描述和 TF；两者缺一不可。
+
+### 仍需继续巩固
+
+- 四元数与 RPY 的转换和旋转方向。
+- `map`、`odom`、`base_footprint`、`base_link` 的完整职责划分。
+- 动态关节如何由 `/joint_states` 驱动 `robot_state_publisher` 发布 TF。

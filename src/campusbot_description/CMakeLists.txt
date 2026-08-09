@@ -6,7 +6,7 @@ find_package(ament_cmake REQUIRED)
 
 # 安装规则，把rviz,urdf等文件的结果放到指定的目录
 install(
-  DIRECTORY rviz urdf
+  DIRECTORY rviz urdf launch
   DESTINATION share/${PROJECT_NAME}
 )
 

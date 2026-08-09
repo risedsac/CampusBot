@@ -162,3 +162,48 @@
 1. 创建最小 URDF/Xacro 机器人模型。
 2. 理解 `base_link`、关节和 TF 父子关系。
 3. 使用 `robot_state_publisher` 在 RViz2 中显示模型。
+
+## 2026-08-09——第 4 天
+
+### 今日目标
+
+1. 理解 URDF/Xacro 中 Link、Joint、Visual 和 Origin 的关系。
+2. 创建 `base_footprint → base_link` 最小底盘模型。
+3. 使用 `robot_state_publisher`、TF 和 RViz2 完成显示；时间允许时加入最小 Launch。
+
+### 今日成果
+
+- 创建可被 Xacro 和 URDF 工具正确解析的蓝色长方体底盘。
+- 发布 `base_footprint → base_link` 固定 TF，并在 RViz2 中显示模型。
+- 使用 description 包自己的 Launch 启动 `robot_state_publisher`。
+
+### 今日知识点
+
+- C++ 语法：本日不新增 C++，集中学习 XML、Python Launch 和机器人坐标系。
+- 数据结构与算法：树结构、唯一父节点和坐标变换链。
+- ROS 2：URDF、Xacro、`robot_description`、`robot_state_publisher`、`/tf_static` 和 RViz2 RobotModel。
+- Linux 与工具：`xacro`、`check_urdf`、`tf2_echo` 和 `FindPackageShare`。
+- 面试知识：Frame、Transform 与 TF tree 的区别，以及 Joint Origin 与 Visual Origin 的区别。
+
+### 验收结果
+
+- [x] Xacro 成功生成普通 URDF。
+- [x] `check_urdf` 确认根 Link 和固定关节树正确。
+- [x] `tf2_echo` 确认固定关节高度为 0.10 m。
+- [x] RViz2 成功显示蓝色底盘。
+- [x] description Launch 成功启动 `robot_state_publisher`。
+
+### 当日复盘
+
+- 已完成：最小底盘模型、固定 TF、RViz2 显示、description Launch 和项目理解检查。
+- 未完成：可移植 RViz2 配置尚未接入 Launch；碰撞、惯性和轮子留到下一学习日。
+- 典型错误：XML 属性和向量误用逗号、`geometry` 拼写错误、遗漏根结束标签、把 Launch 变量写成带引号的普通字符串。
+- 根本原因：首次接触 XML/URDF 语法，以及尚未完全区分字符串字面量、Launch Substitution 和运行期结果。
+- 已掌握：TF 是带时间信息的坐标变换系统；模型描述与 TF 是 RViz2 显示 RobotModel 的两个独立输入。
+- 仍需巩固：四元数、动态 TF、完整导航坐标系链和 RViz2 配置复用。
+
+### 下一学习日方向
+
+1. 为底盘添加 Collision 与 Inertial。
+2. 添加左右驱动轮，并理解 Revolute/Continuous Joint。
+3. 保存 RViz2 配置并完善显示 Launch。
