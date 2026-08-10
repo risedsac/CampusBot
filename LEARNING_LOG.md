@@ -136,3 +136,52 @@
 - 四元数与 RPY 的转换和旋转方向。
 - `map`、`odom`、`base_footprint`、`base_link` 的完整职责划分。
 - 动态关节如何由 `/joint_states` 驱动 `robot_state_publisher` 发布 TF。
+
+## 2026-08-10——机器人动力学、Gazebo 与差速驱动
+
+### 已完成
+
+- 使用 Xacro Property 统一管理底盘、车轮和后辅助轮的尺寸、质量与位置参数。
+- 使用 Xacro Macro 生成左右驱动轮，避免重复维护两份 Link 和 Joint 定义。
+- 为底盘、左右轮和球形辅助轮添加 Visual、Collision、Mass 与 Inertia。
+- 使用长方体、圆柱体和实心球公式计算惯性张量，并通过 Xacro 展开结果核对数值。
+- 创建后辅助轮和左右 Continuous Joint，完成 `base_footprint → base_link → wheels/caster` 结构。
+- 创建 `simulation.launch.py`，统一启动 Gazebo Fortress、`robot_state_publisher` 和机器人生成节点。
+- 在 Gazebo 空世界中成功生成 CampusBot，并验证机器人能够稳定落地。
+- 添加 Gazebo DiffDrive 插件，通过 Gazebo Transport `/cmd_vel` 验证直行与停止。
+- 将主动轮轴线前移至 `x=0.05 m`，并限制线加速度和角加速度，改善启停时的前倾问题。
+- 手动验证 ROS–Gazebo Bridge 后，将 `/cmd_vel` Bridge 接入顶层 Launch。
+- 最终使用 ROS 2 `geometry_msgs/msg/Twist` 成功控制 Gazebo 中的小车运动。
+
+### 验证证据
+
+- `xacro` 成功生成普通 URDF，`check_urdf` 输出 `Successfully Parsed XML`。
+- 生成模型包含左右驱动轮与后辅助轮，轮距展开为约 `0.40 m`，轮径为 `0.10 m`。
+- Gazebo GUI 中机器人能够落到地面并保持稳定，没有持续下沉或飞走。
+- Gazebo 原生 Twist 命令能够驱动小车，证明 DiffDrive 插件、关节名称和轮子参数有效。
+- 手动运行 `parameter_bridge` 后，ROS 2 `/cmd_vel` 能够控制 Gazebo 小车。
+- Bridge 写入 `simulation.launch.py` 后，只需启动顶层 Launch，ROS 2 `/cmd_vel` 即可直接控制小车。
+
+### 排错与根本原因
+
+- 后辅助轮最初存在 XML 闭合标签错误和非法惯性属性写法；通过先检查 XML 层级、再把球体惯性保存为 Xacro Property 修复。
+- Continuous Joint 没有对应动态 TF 时，RViz2 报告无法从 Wheel Link 变换到 `base_footprint`；原因是运动关节需要 Joint State 才能计算动态变换。
+- 初始主动轮位于 `x=0`，整车质心投影几乎落在主动轮支撑边界，突然停止时容易前倾；将主动轮前移并限制减速度后明显改善。
+- `ign topic -l` 没有持续显示 `/cmd_vel`，但命令仍能驱动车辆；原因是 DiffDrive 是订阅端，而临时发布命令结束后不再存在长期发布端。
+- 8 月 9 日曾记录“当前运行没有 `/robot_description` Topic”；今天重新启动并检查后确认该话题实际存在，因此此前结论属于检查时机或方式导致的误判。
+
+### 关键理解
+
+- Visual 决定显示外观，Collision 决定接触几何，Inertial 决定物体受到力和力矩后的运动响应。
+- `F = ma` 描述平动，`τ = Iα` 描述转动；相同力矩下，转动惯量增大一倍会使角加速度减小为一半。
+- Joint Origin 决定 Child Link 坐标系相对 Parent Link 的位置；各 Link 内部的 Visual、Collision 和 Inertial Origin 都相对该 Link 坐标系定义。
+- 差速驱动根据目标线速度、角速度、轮距和轮径计算左右轮角速度。
+- ROS 2 DDS 与 Gazebo Transport 是两套独立通信系统；同名 `/cmd_vel` 需要 Bridge 转换协议和消息类型。
+- 仿真环境中的 Bridge 对应真机中的底层硬件驱动接口，上层 Nav2 可以继续使用标准 ROS 2 `/cmd_vel`。
+
+### 仍需继续巩固
+
+- 惯性张量的非对角项及惯性坐标系旋转后的含义。
+- 球形固定辅助轮的摩擦简化与真实万向轮模型之间的差别。
+- Gazebo 里程计、动态 TF、`/clock` 与 ROS 2 仿真时间的数据关系。
+- Bridge 的单向与双向语法，以及为多个传感器使用 YAML 配置的方式。

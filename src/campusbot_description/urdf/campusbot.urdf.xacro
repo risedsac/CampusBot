@@ -1,29 +1,180 @@
 <?xml version="1.0"?>
 <!-- 定义机器人模型文件 -->
 <robot name="campusbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="base_length" value="0.50"/>
+    <xacro:property name="base_width" value="0.35"/>
+    <xacro:property name="base_height" value="0.20"/>
+    <xacro:property name="base_mass" value="10"/>
+    <xacro:property name="wheel_radius" value="0.10"/>
+    <xacro:property name="wheel_width" value="0.05"/>
+    <xacro:property name="ground_clearance" value="0.04"/>
+    <xacro:property name="wheel_mass" value="1.0"/>
+    <xacro:property name="caster_radius" value="0.04"/>
+    <xacro:property name="caster_mass" value="0.20"/>
+    <xacro:property name="caster_x" value="-0.18"/>
+    <xacro:property name="wheel_x" value="0.05"/>
+    <xacro:property
+      name="caster_inertia"
+      value="${2.0 * caster_mass * caster_radius * caster_radius / 5.0}"/>
 
+    <xacro:macro name="wheel" params="side y_offset">
+        <link name="${side}_wheel_link">
+            <visual>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+                <material name="${side}_wheel_black">
+                    <color rgba="0.02 0.02 0.02 1"/>
+                 </material>
+
+            <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+
+            <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+            </collision>
+    <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="${wheel_mass}"/>
+        <inertia iyy="${wheel_mass * (wheel_radius*wheel_radius) / 2.0}"
+            ixx="${wheel_mass * (3*wheel_radius*wheel_radius+wheel_width*wheel_width) / 12.0}"
+                 izz="${wheel_mass * (3*wheel_radius*wheel_radius+wheel_width*wheel_width) / 12.0}"
+                 ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+
+
+
+        </link>
+        <joint name="${side}_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="${side}_wheel_link"/>
+            <origin rpy="0 0 0" xyz="${wheel_x} ${y_offset} ${wheel_radius - (ground_clearance + base_height / 2.0)}"/>
+            <axis xyz="0 1 0"/>
+        </joint>
+    </xacro:macro>
 <!-- base_footprint相当于机器人的地面接触点，也就是Z=0 -->
 
 <link name="base_footprint"/>
 <!-- 固定机器人关节 -->
 
+<!-- Joint Origin 决定 Link 坐标系放在哪里；Visual、Collision 和 Inertial Origin 决定各自的数据相对 Link 坐标系放在哪里。-->
 <link name="base_link">
     <!--可视化属性 -->
     <visual>
         <geometry>
-            <box size="0.5 0.35 0.20"/>
+            <box size="${base_length} ${base_width} ${base_height}"/>
         </geometry>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <material name="blue">
             <color rgba="0 0 0.8 1"/>
         </material>
     </visual>
+    <!--collision是描述物体发生碰撞的时候的形状 -->
+    <collision>
+        <geometry>
+            <box size="${base_length} ${base_width} ${base_height}"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+    </collision>
+    <!--inertia是描述物体的转动惯量的，既为用多大力会导致物体发生旋转 -->
+    <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="${base_mass}"/>
+        <inertia ixx="${base_mass * (base_width*base_width+base_height*base_height) / 12.0}"
+                 iyy="${base_mass * (base_length*base_length+base_height*base_height) / 12.0}"
+                 izz="${base_mass * (base_width*base_width+base_length*base_length) / 12.0}"
+                 ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+
 </link>
+<link name="rear_caster_link">
+    <visual>
+        <geometry>
+            <sphere radius="${caster_radius}"/>
+        </geometry>
+        <material name="wheel_green">
+            <color rgba="0 1 0 1"/>
+        </material>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </visual>
+    <collision>
+        <geometry>
+            <sphere radius="${caster_radius}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </collision>
+    <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${caster_mass}"/>
+        <inertia ixx="${caster_inertia}" iyy="${caster_inertia}" izz="${caster_inertia}" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+</link>
+<!-- <link name="left_wheel_link"> -->
+<!--     <visual> -->
+<!--         <geometry> -->
+<!--             <cylinder radius="${wheel_radius}" length="${wheel_width}"/>     -->
+<!--         </geometry> -->
+<!--     <material name="wheel_black"> -->
+<!--         <color rgba="0.02 0.02 0.02 1"/> -->
+<!--     </material> -->
+<!---->
+<!--     <origin xyz="0 0 0" rpy="1.5708 0 0"/> -->
+<!--     </visual> -->
+<!--     <collision> -->
+<!--         <geometry> -->
+<!--             <cylinder radius="${wheel_radius}" length="${wheel_width}"/> -->
+<!--         </geometry> -->
+<!---->
+<!--     <origin xyz="0 0 0" rpy="1.5708 0 0"/> -->
+<!--     </collision> -->
+<!-- </link> -->
 <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.1"/>
+    <origin rpy="0 0 0" xyz="0 0 ${ground_clearance+base_height / 2.0}"/>
+</joint>
+<!-- <joint name="left_wheel_joint" type="continuous"> -->
+<!--     <parent link="base_link"/> -->
+<!--     <child link="left_wheel_link"/> -->
+<!--     <origin rpy="0 0 0" xyz="0 ${(base_width + wheel_width) / 2.0} ${wheel_radius - (ground_clearance + base_height / 2.0)}"/> -->
+<!--     <axis xyz="0 1 0"/> -->
+<!-- </joint> -->
+<!---->
+<joint name="rear_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_caster_link"/>
+    <origin xyz="${caster_x} 0 ${caster_radius-(ground_clearance+base_height/2)}" rpy="0 0 0"/>
 </joint>
 
-</robot>
+<xacro:wheel
+      side="left"
+      y_offset="${(base_width + wheel_width) / 2.0}"/>
+<xacro:wheel
+    side="right"
+    y_offset="${-(base_width + wheel_width) / 2.0}"/>
+<gazebo>
+    <plugin
+        filename="ignition-gazebo-diff-drive-system"
+        name="gz::sim::systems::DiffDrive">
+     <left_joint>left_wheel_joint</left_joint>
+     <right_joint>right_wheel_joint</right_joint>
+     <!-- 左右轮中心距离，也就是L,目前是0.40 -->
+     <wheel_separation>${base_width+wheel_width}</wheel_separation>
+     <wheel_radius>${wheel_radius}</wheel_radius>
+     <topic>/cmd_vel</topic>
+     <!-- 里程计输出频率，设置为30 -->
+     <odom_publish_frequency>30</odom_publish_frequency>
 
+    <max_linear_acceleration>0.5</max_linear_acceleration>
+    <min_linear_acceleration>-0.5</min_linear_acceleration>
+
+    <max_angular_acceleration>1.0</max_angular_acceleration>
+    <min_angular_acceleration>-1.0</min_angular_acceleration>
+
+    </plugin>
+</gazebo>
+
+</robot>

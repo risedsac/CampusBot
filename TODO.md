@@ -15,20 +15,31 @@
 - [x] 将 Publisher 发布周期改为 ROS 2 Parameter。
 - [x] 使用 Launch 同时启动 Publisher 和 Subscriber。
 
-## 当前里程碑：机器人模型与 TF
+## 已完成里程碑：机器人模型、TF 与基础仿真驱动
 
 - [x] 创建包含 `base_footprint` 和 `base_link` 的最小 Xacro 模型。
 - [x] 使用 `xacro` 和 `check_urdf` 验证模型语法与树结构。
 - [x] 使用 `robot_state_publisher` 发布固定 TF。
 - [x] 在 RViz2 中显示底盘外观。
 - [x] 使用 description 包的 Launch 启动 `robot_state_publisher`。
-- [ ] 添加底盘的碰撞模型与惯性参数。
-- [ ] 添加左右驱动轮和辅助轮。
+- [x] 添加底盘的碰撞模型与惯性参数。
+- [x] 添加左右驱动轮和后辅助轮。
+- [x] 使用 Xacro Property 和 Macro 复用左右轮模型。
+- [x] 使用 Gazebo Fortress 加载差速机器人并验证物理稳定性。
+- [x] 添加 Gazebo DiffDrive 插件并验证原生速度控制。
+- [x] 使用 `ros_gz_bridge` 将 ROS 2 `/cmd_vel` 桥接到 Gazebo。
+- [x] 使用顶层 Launch 同时启动 Gazebo、机器人模型与速度桥接节点。
 - [ ] 保存可移植的 RViz2 配置并接入 Launch。
+
+## 当前里程碑：传感器、里程计与 TF
+
+- [ ] 桥接 Gazebo `/clock` 并统一使用仿真时间。
+- [ ] 输出并桥接差速驱动里程计 `/odom`。
+- [ ] 验证 `odom → base_footprint` 动态 TF。
+- [ ] 添加激光雷达模型并桥接 `/scan`。
+- [ ] 检查传感器 Topic 的消息类型、频率和 QoS。
 
 ## 后续任务
 
-- [ ] 完成差速机器人描述。
-- [ ] 接入 Gazebo 传感器与差速驱动。
 - [ ] 集成 slam_toolbox 与 Nav2。
 - [ ] 实现任务管理、路径规划和自动化评测功能包。

@@ -207,3 +207,66 @@
 1. 为底盘添加 Collision 与 Inertial。
 2. 添加左右驱动轮，并理解 Revolute/Continuous Joint。
 3. 保存 RViz2 配置并完善显示 Launch。
+
+## 2026-08-10——第 5 天
+
+### 今日目标
+
+1. 为底盘、驱动轮和后辅助轮补全碰撞与惯性属性。
+2. 在 Gazebo Fortress 中生成并稳定运行差速机器人。
+3. 打通 ROS 2 `/cmd_vel` 到 Gazebo DiffDrive 的控制链。
+
+### 今日成果
+
+- 完成具有底盘、两个驱动轮和后辅助轮的差速机器人第一版物理模型。
+- 使用 Xacro Property 和 Macro 管理重复参数与左右轮结构。
+- 完成 Gazebo 顶层 Launch、DiffDrive 插件与 ROS–Gazebo Bridge。
+- 使用一条 Launch 命令启动完整仿真，并通过 ROS 2 Twist 消息控制小车前进和停止。
+- 根据支撑点和质心关系定位启停前倾问题，通过前移主动轮与限制加速度改善稳定性。
+
+### 今日知识点
+
+- C++ 语法：本日不新增 C++，重点学习 XML/Xacro、Python Launch 和动力学概念。
+- 数据结构与算法：使用树结构理解 Link/Joint 层级，使用支撑三角形分析静态稳定性。
+- ROS 2：`robot_description`、仿真时间、`geometry_msgs/msg/Twist`、ROS–Gazebo Bridge。
+- Linux 与工具：`xacro`、`check_urdf`、`ign topic`、`ros2 topic pub`、多终端分层验证。
+- 面试知识：Visual/Collision/Inertial 的区别、差速运动模型、仿真与真机底层接口替换。
+
+### 验收结果
+
+- [x] 底盘、车轮和后辅助轮均具有 Visual、Collision 与 Inertial。
+- [x] Xacro 与 URDF 结构检查通过。
+- [x] Gazebo 能够生成机器人并进行物理仿真。
+- [x] Gazebo 原生 `/cmd_vel` 能够驱动小车。
+- [x] ROS 2 `/cmd_vel` 通过 Bridge 驱动小车。
+- [x] Bridge 已接入顶层 Launch，不再需要手动单独启动。
+- [x] 小车连续启停后保持基本稳定。
+
+### 当日复盘
+
+- 已完成：机器人动力学属性、车轮 Macro、辅助轮、Gazebo 生成、差速驱动、稳定性修正和 ROS–Gazebo Bridge。
+- 未完成：可移植 RViz2 配置、`/clock`、里程计、动态 TF 和激光雷达，顺延到下一学习日。
+- 典型错误：XML 标签闭合错误、惯性属性引用方式错误、Python Launch 缩进错误、包名漏写引号、未使用路径拼接工具。
+- 根本原因：首次同时处理 XML 层级、Xacro 表达式和 Python Launch，尚未形成“语法检查 → 展开检查 → 运行检查”的固定流程。
+- 已掌握：Visual/Collision/Inertial 的职责、惯性张量基本意义、差速驱动参数、Bridge 的协议转换作用和顶层 Launch 的工程价值。
+- 仍需巩固：完整动力学参数、真实脚轮建模、仿真时钟、里程计和移动关节 TF。
+
+### 当日面试题（待回答）
+
+1. RViz2 和 Gazebo 的核心区别是什么？
+2. URDF 中 Visual、Collision 和 Inertial 分别解决什么问题？
+3. `mass`、惯性张量和 Inertial Origin 会分别影响哪些物理现象？
+4. 差速小车如何根据线速度和角速度计算左右轮速度？
+5. 为什么 ROS 2 `/cmd_vel` 和 Gazebo `/cmd_vel` 同名却不能直接通信？
+6. 仿真机器人突然停止时前倾，你会从哪些物理参数和结构关系排查？
+7. 如果从 Gazebo 换成真机，哪些上层模块可以保留，哪些底层模块需要替换？
+
+### 当日算法题
+
+- 暂不新增算法题；今天集中完成机器人动力学和仿真控制链，下一学习日恢复算法练习。
+
+### 下一学习日方向
+
+1. 桥接 `/clock`，理解真实时间与仿真时间。
+2. 输出 `/odom` 并建立 `odom → base_footprint` 动态 TF。
+3. 添加激光雷达并验证 `/scan` 的消息类型、频率和 QoS。
