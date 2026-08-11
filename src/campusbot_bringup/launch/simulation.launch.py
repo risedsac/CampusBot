@@ -49,13 +49,56 @@ def generate_launch_description():
     cmd_vel_bridge= Node(
             package="ros_gz_bridge",
             executable="parameter_bridge",
+            name="cmd_vel_bridge",
             output="screen",
             arguments=[
                 "/cmd_vel@geometry_msgs/msg/Twist]ignition.msgs.Twist"
                 ]
 
              )
-    return LaunchDescription([gazebo_sim,robot_state_publisher,spawn_robot,cmd_vel_bridge])
+    clock_bridge=Node(
+             package="ros_gz_bridge",
+             executable="parameter_bridge",
+             name="clock_bridge",
+             output="screen",
+             arguments=[
+                 "/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock"
+                 ]
+             )
+    odom_bridge = Node(
+            package="ros_gz_bridge",
+            executable="parameter_bridge",
+            name="odom_bridge",
+            output="screen",
+            arguments=[
+                "/model/campusbot/odometry"
+                "@nav_msgs/msg/Odometry"
+                "[ignition.msgs.Odometry"
+                ],
+            remappings=[
+                ("/model/campusbot/odometry","/odom")
+                ]
+        )
 
-
-
+    tf_bridge = Node(
+          package="ros_gz_bridge",
+          executable="parameter_bridge",
+          name="tf_bridge",
+          output="screen",
+          arguments=[
+              "/model/campusbot/tf"
+              "@tf2_msgs/msg/TFMessage"
+              "[ignition.msgs.Pose_V",
+          ],
+          remappings=[
+              ("/model/campusbot/tf", "/tf"),
+          ],
+      )
+    return LaunchDescription([gazebo_sim,
+                              robot_state_publisher,
+                              spawn_robot,
+                              cmd_vel_bridge,
+                              clock_bridge,
+                              odom_bridge,
+                              tf_bridge
+                              ])

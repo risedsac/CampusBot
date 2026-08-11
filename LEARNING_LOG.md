@@ -185,3 +185,51 @@
 - 球形固定辅助轮的摩擦简化与真实万向轮模型之间的差别。
 - Gazebo 里程计、动态 TF、`/clock` 与 ROS 2 仿真时间的数据关系。
 - Bridge 的单向与双向语法，以及为多个传感器使用 YAML 配置的方式。
+
+## 2026-08-11——仿真时间、里程计与动态 TF
+
+### 已完成
+
+- 对比 Gazebo Transport 与 ROS 2 Graph 中的 Clock、Odometry 和 TF Topic。
+- 使用 `ros2 topic info --verbose` 证明 Topic 名称存在不等于存在 Publisher，也不等于有消息流动。
+- 手动桥接 Gazebo `/clock`，验证 Gazebo 暂停时仿真时间停止、恢复后继续前进。
+- 将 Clock Bridge 接入顶层 Launch，并为各 Bridge 设置唯一 Node 名称。
+- 检查 Gazebo `/model/campusbot/odometry` 的消息类型，并桥接为 ROS 2 `nav_msgs/msg/Odometry`。
+- 使用 ROS 2 Remapping 将模型作用域 Topic 映射为标准 `/odom`。
+- 配置 DiffDrive 的 `frame_id=odom` 与 `child_frame_id=base_footprint`，统一 Odometry 和 URDF 的 Frame 名称。
+- 桥接 Gazebo `/model/campusbot/tf` 到 ROS 2 `/tf`，使用 `tf2_echo` 验证 `odom → base_footprint` 动态变换。
+- 使用一条 `simulation.launch.py` 同时启动 Gazebo、机器人、速度、时钟、里程计和 TF Bridge。
+
+### 验证证据
+
+- Bridge 启动前，ROS 2 `/clock` 的 Publisher 数量为 0，`robot_state_publisher` 是唯一 Subscriber。
+- Clock Bridge 启动后，`clock_bridge` 成为唯一 Publisher，仿真时间能够读取并受 Gazebo 暂停状态控制。
+- Gazebo Odometry 类型确认为 `ignition.msgs.Odometry`，ROS 2 `/odom` 类型确认为 `nav_msgs/msg/Odometry`。
+- 小车直行后 `/odom` 的 `position.x` 累计到约 `1.83 m`，时间戳使用仿真时间。
+- 修正 Frame 配置后，消息变为 `frame_id: odom`、`child_frame_id: base_footprint`。
+- Gazebo TF 类型确认为 `ignition.msgs.Pose_V`，`tf2_echo odom base_footprint` 已实际运行验证成功。
+- Clock、Odometry 和 TF Bridge 写入顶层 Launch 后均完成自动启动验证。
+
+### 关键理解
+
+- `use_sim_time=true` 会让具体 ROS 2 Node 订阅 `/clock`，并不意味着 ROS 2 自动产生仿真时钟。
+- `/clock` Bridge 统一 Gazebo 与 ROS 2 的时间基准；Odometry Bridge 转换并传递运动状态，两者职责不同。
+- `/odom` 同时包含 Pose、Twist 和 Covariance；TF 提供坐标系查询接口，收到 Odometry 不会自动写入 TF Buffer。
+- Topic Remapping 只修改 ROS Graph 中的 Topic 名称，不会修改消息内部的 `frame_id` 和 `child_frame_id`。
+- `parameters` 进入 ROS 2 参数系统，`arguments` 进入可执行程序命令行，`launch_arguments` 传给被包含的 Launch，`remappings` 修改 ROS 侧名称。
+- `[` 表示 Gazebo → ROS 2，`]` 表示 ROS 2 → Gazebo，开口方向可以辅助记忆消息来源。
+- 排错应沿 `ROS Publisher → Bridge → Gazebo Topic → DiffDrive → Joint/Physics` 数据流逐段验证。
+
+### 算法练习：二维机器人返回原点
+
+- 使用两个整数累计二维坐标的总体思路正确。
+- 发现未初始化局部整数、自定义字符与题目输入不一致等问题。
+- 理解 `int x, y = 0;` 只初始化 `y`，`x` 仍是未初始化状态。
+- 最终修正版函数、复杂度分析和编译运行尚未完成，顺延到下一学习日，不记录为已验证。
+
+### 仍需继续巩固
+
+- Topic、Publisher、Subscriber 与具体 Node 的精确关系，避免使用“ROS 2 本身是订阅者”之类不准确表述。
+- `/odom` 消息和 `odom → base_footprint` TF 的重复信息与不同消费者。
+- Frame 前缀、ROS Namespace 和多机器人 Topic/TF 隔离策略。
+- `/joint_states` 如何驱动 `robot_state_publisher` 补全运动关节 TF。
