@@ -13,6 +13,9 @@
     <xacro:property name="caster_mass" value="0.20"/>
     <xacro:property name="caster_x" value="-0.18"/>
     <xacro:property name="wheel_x" value="0.05"/>
+    <xacro:property name="lidar_radius" value="0.05"/>
+    <xacro:property name="lidar_height" value="0.04"/>
+    <xacro:property name="lidar_mass"  value="0.20"/>
     <xacro:property
       name="caster_inertia"
       value="${2.0 * caster_mass * caster_radius * caster_radius / 5.0}"/>
@@ -87,6 +90,32 @@
     </inertial>
 
 </link>
+<link name="lidar_link">
+    <visual>
+        <geometry>
+            <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+        </geometry>
+        <material name="lidar_red">
+            <color rgba="1 0 0 1"/>
+        </material>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </collision>
+    <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="${lidar_mass}"/>
+            <inertia ixx="${lidar_mass * (3*lidar_radius*lidar_radius+lidar_height*lidar_height)/12}" 
+                iyy="${lidar_mass * (3*lidar_radius*lidar_radius+lidar_height*lidar_height)/12}"
+                izz="${lidar_mass * lidar_radius * lidar_radius/2}"
+                ixy="0" iyz="0" ixz="0"/>
+        </inertial>
+</link>
+
 <link name="rear_caster_link">
     <visual>
         <geometry>
@@ -109,49 +138,29 @@
         <inertia ixx="${caster_inertia}" iyy="${caster_inertia}" izz="${caster_inertia}" ixy="0" ixz="0" iyz="0"/>
     </inertial>
 </link>
-<!-- <link name="left_wheel_link"> -->
-<!--     <visual> -->
-<!--         <geometry> -->
-<!--             <cylinder radius="${wheel_radius}" length="${wheel_width}"/>     -->
-<!--         </geometry> -->
-<!--     <material name="wheel_black"> -->
-<!--         <color rgba="0.02 0.02 0.02 1"/> -->
-<!--     </material> -->
-<!---->
-<!--     <origin xyz="0 0 0" rpy="1.5708 0 0"/> -->
-<!--     </visual> -->
-<!--     <collision> -->
-<!--         <geometry> -->
-<!--             <cylinder radius="${wheel_radius}" length="${wheel_width}"/> -->
-<!--         </geometry> -->
-<!---->
-<!--     <origin xyz="0 0 0" rpy="1.5708 0 0"/> -->
-<!--     </collision> -->
-<!-- </link> -->
 <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
     <origin rpy="0 0 0" xyz="0 0 ${ground_clearance+base_height / 2.0}"/>
 </joint>
-<!-- <joint name="left_wheel_joint" type="continuous"> -->
-<!--     <parent link="base_link"/> -->
-<!--     <child link="left_wheel_link"/> -->
-<!--     <origin rpy="0 0 0" xyz="0 ${(base_width + wheel_width) / 2.0} ${wheel_radius - (ground_clearance + base_height / 2.0)}"/> -->
-<!--     <axis xyz="0 1 0"/> -->
-<!-- </joint> -->
-<!---->
 <joint name="rear_caster_joint" type="fixed">
     <parent link="base_link"/>
     <child link="rear_caster_link"/>
     <origin xyz="${caster_x} 0 ${caster_radius-(ground_clearance+base_height/2)}" rpy="0 0 0"/>
 </joint>
-
 <xacro:wheel
       side="left"
       y_offset="${(base_width + wheel_width) / 2.0}"/>
 <xacro:wheel
     side="right"
     y_offset="${-(base_width + wheel_width) / 2.0}"/>
+<joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 ${base_height/2+lidar_height/2}" rpy="0 0 0"/>
+</joint>
+
+
 <gazebo>
     <!-- 里程计插件 -->
     <plugin
