@@ -94,11 +94,23 @@ def generate_launch_description():
               ("/model/campusbot/tf", "/tf"),
           ],
       )
+    joint_states_bridge = Node(
+            package="ros_gz_bridge",
+            executable="parameter_bridge",
+            name = "joint_states_bridge",
+            output="screen",
+            arguments=[
+                "/joint_states"
+                "@sensor_msgs/msg/JointState"
+                "[ignition.msgs.Model"
+                ]
+            )    
     return LaunchDescription([gazebo_sim,
                               robot_state_publisher,
                               spawn_robot,
                               cmd_vel_bridge,
                               clock_bridge,
                               odom_bridge,
-                              tf_bridge
+                              tf_bridge,
+                              joint_states_bridge,
                               ])
