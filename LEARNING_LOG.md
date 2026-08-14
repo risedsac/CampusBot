@@ -233,3 +233,50 @@
 - `/odom` 消息和 `odom → base_footprint` TF 的重复信息与不同消费者。
 - Frame 前缀、ROS Namespace 和多机器人 Topic/TF 隔离策略。
 - `/joint_states` 如何驱动 `robot_state_publisher` 补全运动关节 TF。
+
+## 2026-08-14——Joint State、雷达坐标系与 Gazebo LaserScan
+
+### 已完成
+
+- 修正二维机器人返回原点函数中的局部变量初始化问题，明确 `int x, y = 0;` 只初始化 `y`；最终逻辑通过代码检查，时间复杂度为 `O(n)`、额外空间复杂度为 `O(1)`，本次未单独编译运行。
+- 在 Gazebo 模型中添加 `JointStatePublisher`，只发布左右驱动轮关节状态。
+- 使用 `ros_gz_bridge` 将 Gazebo `ignition.msgs.Model` 转换为 ROS 2 `sensor_msgs/msg/JointState`。
+- 验证 `/joint_states` 的发布者为 `joint_states_bridge`、订阅者为 `robot_state_publisher`，并通过轮子旋转时变化的 TF 验证动态关节链路。
+- 添加 `lidar_link`、圆柱体 Visual/Collision/Inertial 和固定关节，雷达中心相对 `base_footprint` 的高度为 `0.26 m`。
+- 创建项目自有 `campus_world.sdf`，加载 Physics、UserCommands、SceneBroadcaster 和 Sensors 系统，并通过 `FindPackageShare` 从 Launch 中定位世界文件。
+- 在 `lidar_link` 上添加二维 `gpu_lidar`，配置 360 个水平采样、约 360° 视场、10 Hz、0.12～12 m 量程和 0.01 m 距离分辨率。
+
+### 验证证据
+
+- `ros2 topic info /joint_states --verbose` 显示一个 Bridge Publisher 和一个 `robot_state_publisher` Subscriber。
+- `ros2 topic echo --once /joint_states` 返回左右轮的名称、位置、速度与力矩数据。
+- 完整仿真启动后，RViz2 中左右轮重新出现；`tf2_echo` 显示轮子旋转时 Rotation 持续变化。
+- `xacro` 和 `check_urdf` 成功解析包含 `lidar_link` 的机器人树。
+- `tf2_echo base_footprint lidar_link` 与生成 SDF 均确认雷达高度为 `0.26 m`。
+- `ign sdf -k campus_world.sdf` 返回 `Valid`，新世界中机器人生成、控制和 `/clock` 均正常。
+- URDF 转换后的 SDF 保留 `lidar_sensor`、`gpu_lidar`、`/scan` 和全部扫描参数。
+- `ign topic -i -t /scan` 确认 Gazebo `/scan` 的消息类型为 `ignition.msgs.LaserScan`。
+
+### 排错与根本原因
+
+- 最初将 Joint State 插件参数写成 DiffDrive 的 `<left_joint>` 和 `<right_joint>`；根本原因是没有区分不同插件各自的配置接口，修正为可重复的 `<joint_name>`。
+- 只运行 description Launch 时 RViz2 中轮子消失；原因是 Continuous Joint 需要 `/joint_states` 才能由 `robot_state_publisher` 生成动态 TF，而固定的雷达关节不需要实时状态。
+- 雷达模型曾出现 `radius`、惯量属性和 Link 名称拼写错误；通过“XML 解析 → URDF 语义检查 → TF 数值检查”逐层修复。
+- `launch_arguments` 中 `['-r', world_file]` 会直接拼接成 `-r/path`；原因是该列表表示同一参数值的替换片段，不是自动插入空格的终端参数列表。
+- Sensor 配置曾混淆 `gazebo reference` 与 `sensor name`；前者必须引用已有 `lidar_link`，后者是 Gazebo 内部的 `lidar_sensor` 实体名称。
+
+### 关键理解
+
+- URDF 描述关节连接关系，`/joint_states` 描述活动关节当前状态，`robot_state_publisher` 将二者结合生成动态 TF。
+- Gazebo GUI 本身不会让轮子 TF 出现；真正起作用的是 Joint State 插件、Bridge 和 `robot_state_publisher` 数据链。
+- `lidar_link` 表示安装坐标系，`lidar_sensor` 表示传感器实体，`/scan` 表示数据通道，三者不能混为一谈。
+- `samples × horizontal resolution` 决定返回距离数据点数量；距离分辨率表示线性测量粒度，不等同于测量精度。
+- `-π` 到 `+π` 表示完整一圈，ROS 标准平面坐标中 0 rad 朝向 `+X`，正角方向朝向 `+Y`。
+- 系统自带世界适合示例，但仓库自有世界更利于依赖固定、障碍物扩展和 GitHub 复现。
+
+### 仍需继续巩固
+
+- 将 Gazebo LaserScan 转换为 ROS 2 `sensor_msgs/msg/LaserScan` 的 Bridge 类型与方向。
+- `/scan` 的实际 `angle_increment`、发布频率、QoS 和 `header.frame_id`。
+- RViz2 LaserScan 显示以及 `lidar_link` TF 对齐检查。
+- 在世界中加入可用于建图的障碍物，并理解仿真分辨率、噪声和真实雷达误差的区别。

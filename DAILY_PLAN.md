@@ -327,3 +327,64 @@
 1. 完成二维机器人返回原点的最终代码与复杂度分析。
 2. 发布并桥接驱动轮 `/joint_states`，补全 Wheel Link 动态 TF。
 3. 添加激光雷达模型，并检查 `/scan` 类型、频率和 QoS。
+
+## 2026-08-14——第 7 天
+
+### 今日目标
+
+1. 收尾二维机器人返回原点算法题。
+2. 发布并桥接左右轮 `/joint_states`，补全动态 TF。
+3. 添加激光雷达坐标系、项目世界和 Gazebo `/scan`。
+
+### 今日成果
+
+- 完成 Gazebo Joint State 插件、ROS 2 Bridge 和轮子动态 TF 的端到端链路。
+- 创建 `lidar_link` 与固定关节，并通过 TF 数值验证雷达安装高度为 `0.26 m`。
+- 创建带 Sensors 系统的 `campus_world.sdf`，替代系统 `empty.sdf`，同时保持机器人生成、控制和仿真时间正常。
+- 添加 360 点、10 Hz、0.12～12 m 的二维 GPU Lidar，并在 Gazebo 侧成功发布 `/scan`。
+
+### 今日知识点
+
+- C++ 语法：局部变量必须分别初始化；`const std::string &` 避免复制并限制修改；布尔表达式可以直接返回。
+- 数据结构与算法：二维坐标累计；机器人返回原点的时间复杂度 `O(n)`、额外空间复杂度 `O(1)`。
+- ROS 2：`JointState` 字段、活动关节动态 TF、`robot_state_publisher` 的输入输出、Gazebo Transport 与 DDS 的边界。
+- Linux 与工具：`xacro`、`check_urdf`、`ign sdf -k/-p`、`ign topic -i`、`ros2 topic info --verbose`、`tf2_echo`。
+- 面试知识：URDF 与 Joint State 的分工、Link/Sensor/Topic 的区别、LaserScan 参数与传感器数据链。
+
+### 验收结果
+
+- [x] `/joint_states` 在 ROS 2 中有 Bridge Publisher 和 `robot_state_publisher` Subscriber。
+- [x] 左右轮关节位置和速度可以读取，轮子动态 TF 随运动变化。
+- [x] `lidar_link` 在 RViz2/Gazebo 中位于底盘顶部，最终 Z 高度为 `0.26 m`。
+- [x] 项目自有世界通过 SDF 检查并能稳定启动完整仿真。
+- [x] Gazebo `/scan` 类型确认为 `ignition.msgs.LaserScan`。
+- [ ] ROS 2 `/scan` Bridge、QoS、`frame_id` 和 RViz2 显示尚未完成。
+
+### 当日复盘
+
+- 已完成：算法代码纠错、Joint State 端到端链路、轮子动态 TF、雷达物理模型、项目自有世界、Sensors 系统和 Gazebo LaserScan。
+- 未完成：ROS 2 `/scan` Bridge、LaserScan 内容与频率检查、QoS、Frame 对齐、RViz2 雷达显示和建图障碍世界。
+- 典型错误：局部变量只初始化一部分、XML 标签漏写 `/`、插件参数名称混用、惯量属性拼写错误、Launch 替换片段缺少显式空格、Link 与 Sensor 名称混淆。
+- 根本原因：同时涉及 XML、URDF 语义、SDF 扩展和 Python Launch 四个层级，尚未形成每一层都独立验证的习惯。
+- 已掌握：能够沿“仿真插件 → Gazebo Topic → Bridge → ROS 2 Topic → `robot_state_publisher` → TF”解释 Joint State 数据流，并能解释雷达主要参数的含义与取值理由。
+- 仍需巩固：消息 `frame_id` 与 TF 的对应关系、QoS 兼容规则、LaserScan 消息字段和 SLAM 对 `/scan` 的要求。
+
+### 当日面试题（待回答）
+
+1. 为什么 URDF 已经定义左右轮关节，RViz2 仍然需要 `/joint_states` 才能显示轮子？
+2. `JointStatePublisher`、`joint_states_bridge` 和 `robot_state_publisher` 分别承担什么职责？
+3. 为什么可靠发布者与 Best Effort 订阅者可以匹配？反过来一定可以吗？
+4. `lidar_link`、`lidar_sensor` 和 `/scan` 分别是什么？
+5. `samples=360`、水平 `resolution=1` 和距离 `resolution=0.01` 分别表示什么？
+6. 为什么项目要维护自己的 World 文件，而不是继续使用系统 `empty.sdf`？
+7. 如果 Gazebo 中有 `/scan`，但 ROS 2 中没有，你会按什么顺序排查？
+
+### 当日算法题
+
+- 二维机器人返回原点：最终逻辑完成代码检查，复杂度为 `O(n)` 时间和 `O(1)` 空间；本次没有单独编译运行，不记录为运行验证成功。
+
+### 下一学习日方向
+
+1. 桥接 ROS 2 `/scan`，检查 LaserScan 字段、频率、QoS 和 `frame_id`。
+2. 在 RViz2 中显示激光扫描，并验证雷达坐标系随机器人运动正确对齐。
+3. 为项目世界加入简单障碍物，为 slam_toolbox 建图准备可观测环境。

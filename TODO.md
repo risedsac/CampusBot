@@ -36,9 +36,12 @@
 - [x] 桥接 Gazebo `/clock` 并统一使用仿真时间。
 - [x] 输出并桥接差速驱动里程计 `/odom`。
 - [x] 验证 `odom → base_footprint` 动态 TF。
-- [ ] 发布并桥接驱动轮 `/joint_states`，补全 Wheel Link 动态 TF。
-- [ ] 添加激光雷达模型并桥接 `/scan`。
-- [ ] 检查传感器 Topic 的消息类型、频率和 QoS。
+- [x] 发布并桥接驱动轮 `/joint_states`，补全 Wheel Link 动态 TF。
+- [x] 添加 `lidar_link`、固定 TF 和 GPU Lidar 传感器模型。
+- [x] 创建带 Sensors 系统的项目自有世界，并验证 Gazebo `/scan`。
+- [ ] 将 Gazebo `/scan` 桥接为 ROS 2 `sensor_msgs/msg/LaserScan`。
+- [ ] 检查 ROS 2 `/scan` 的消息内容、频率、QoS 和 `frame_id`。
+- [ ] 在 RViz2 中显示 LaserScan，并验证运动过程中的 TF 对齐。
 
 ## 后续任务
 

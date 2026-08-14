@@ -22,3 +22,11 @@
 - 决策：使用 `campusbot_task_manager` 承载任务状态通信和后续 Nav2 Action Client，首先用最小 Publisher/Subscriber 验证 C++ 构建与回调模型。
 - 理由：将任务调度与机器人描述、系统启动和导航配置分离，便于独立测试，也能逐步学习 Topic、Parameter、Service 和 Action。
 - 影响：当前的 `std_msgs/msg/String` 只是通信学习载体；任务状态模型将在需求明确后再评估是否换成自定义消息。
+
+## ADR-004：使用项目自有的传感器仿真世界
+
+- 日期：2026-08-14
+- 状态：已接受
+- 决策：在 `campusbot_bringup/worlds` 中维护 `campus_world.sdf`，由顶层 Launch 通过 `FindPackageShare` 加载，不修改 Gazebo 安装目录中的 `empty.sdf`。
+- 理由：系统 `empty.sdf` 没有加载 Sensors 系统；项目自有世界可以固定 Physics、渲染和传感器插件配置，也便于后续加入建图障碍物并由 Git 追踪。
+- 影响：`campusbot_bringup` 必须安装 `worlds` 目录；GPU Lidar 依赖该世界中的 Sensors 系统和 Ogre2 渲染引擎。
