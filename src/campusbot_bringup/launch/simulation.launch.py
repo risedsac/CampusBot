@@ -21,11 +21,18 @@ def generate_launch_description():
           "launch",
           "gz_sim.launch.py",
       ])
+    campus_world_file = PathJoinSubstitution(
+            [
+                FindPackageShare("campusbot_bringup"),
+                "worlds",
+                "campus_world.sdf",
+                ]
+            )
 
     gazebo_sim = IncludeLaunchDescription(
           PythonLaunchDescriptionSource(gazebo_launch_file),
           launch_arguments={
-              "gz_args": "-r empty.sdf",
+              "gz_args": ["-r ",campus_world_file],
           }.items(),
       )
 
