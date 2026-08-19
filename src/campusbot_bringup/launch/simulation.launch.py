@@ -112,6 +112,20 @@ def generate_launch_description():
                 "[ignition.msgs.Model"
                 ]
             )    
+    scan_bridge = Node(
+            package="ros_gz_bridge",
+            executable="parameter_bridge",
+            name = "scan_bridge",
+            output="screen",
+            arguments=[
+                "/scan"
+                "@sensor_msgs/msg/LaserScan"
+                "[ignition.msgs.LaserScan"
+                ],
+            parameters=[
+                {"override_frame_id": "lidar_link"},
+                ],
+            )
     return LaunchDescription([gazebo_sim,
                               robot_state_publisher,
                               spawn_robot,
@@ -120,4 +134,5 @@ def generate_launch_description():
                               odom_bridge,
                               tf_bridge,
                               joint_states_bridge,
+                              scan_bridge,
                               ])
