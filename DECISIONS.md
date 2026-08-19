@@ -30,3 +30,12 @@
 - 决策：在 `campusbot_bringup/worlds` 中维护 `campus_world.sdf`，由顶层 Launch 通过 `FindPackageShare` 加载，不修改 Gazebo 安装目录中的 `empty.sdf`。
 - 理由：系统 `empty.sdf` 没有加载 Sensors 系统；项目自有世界可以固定 Physics、渲染和传感器插件配置，也便于后续加入建图障碍物并由 Git 追踪。
 - 影响：`campusbot_bringup` 必须安装 `worlds` 目录；GPU Lidar 依赖该世界中的 Sensors 系统和 Ogre2 渲染引擎。
+
+## ADR-005：在 Scan Bridge 输出端统一雷达 Frame
+
+- 日期：2026-08-19
+- 状态：已接受
+- 决策：通过 `scan_bridge` 的 `override_frame_id` 参数，将 ROS 2 LaserScan 的 `header.frame_id` 统一为 URDF 中已有的 `lidar_link`。
+- 理由：Gazebo 默认输出的作用域名称 `campusbot/base_footprint/lidar_sensor` 不属于机器人 TF 树；`lidar_link` 才是雷达数据实际安装位置对应的稳定坐标系。
+- 备选方案：修改传感器 SDF 的 Frame 扩展配置，或额外发布静态 TF。当前 Bridge 参数已经在本机版本中完成运行验证，而额外静态 TF 会为同一个物理位置制造不必要的坐标系。
+- 影响：RViz2、slam_toolbox 等 ROS 2 消费者可以通过现有 TF 树转换扫描数据；升级 `ros_gz_bridge` 时需要继续确认该参数可用。

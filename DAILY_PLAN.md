@@ -388,3 +388,63 @@
 1. 桥接 ROS 2 `/scan`，检查 LaserScan 字段、频率、QoS 和 `frame_id`。
 2. 在 RViz2 中显示激光扫描，并验证雷达坐标系随机器人运动正确对齐。
 3. 为项目世界加入简单障碍物，为 slam_toolbox 建图准备可观测环境。
+
+## 2026-08-19——第 8 天
+
+### 今日目标
+
+1. 将 Gazebo `/scan` 桥接为标准 ROS 2 LaserScan。
+2. 检查消息内容、频率、QoS 和 Frame，并在 RViz2 中完成显示。
+3. 加入一个几何尺寸已知的障碍物，对激光距离进行理论与实测对照。
+
+### 今日成果
+
+- 顶层 Launch 自动启动 Scan Bridge，ROS 2 能够稳定接收约 10 Hz 的 360 点 `/scan`。
+- LaserScan 的 `frame_id` 已与 URDF/TF 中的 `lidar_link` 对齐。
+- Gazebo 障碍物、ROS 2 距离数据和 RViz2 扫描线完成端到端验证。
+
+### 今日知识点
+
+- C++ 语法：理解 LaserScan 的 `ranges` 在 C++ 中可视为 `std::vector<float>`，本日未新增 C++ 实现。
+- 数据结构与算法：数组下标与角度采样的对应关系，使用平面几何解释扫描距离分布。
+- ROS 2：LaserScan 消息、传感器 QoS、消息 `frame_id`、TF 查询和 Bridge 方向。
+- Linux 与工具：`ros2 topic info/hz/echo`、`ros2 param get`、`tf2_echo`、`ign sdf -k`。
+- 面试知识：Topic 有数据但 RViz2 无法显示的分层排错方法，以及 Frame 语义统一的工程方案。
+
+### 验收结果
+
+- [x] `/scan` 类型为 `sensor_msgs/msg/LaserScan`，Publisher 数量为 1。
+- [x] 实测频率约为 9.9 Hz，一帧包含 360 个距离值。
+- [x] 消息 `frame_id` 为 `lidar_link`，TF 查询成功。
+- [x] RViz2 LaserScan 状态为 `OK`，能够看到障碍物形成的扫描线。
+- [x] 理论距离 1.75 m，实测最近距离约 1.7501 m。
+- [x] Scan Bridge 与测试障碍物分别完成 Git 提交并推送到 GitHub。
+
+### 当日复盘
+
+- 已完成：Scan Bridge、消息检查、Frame 修正、TF/RViz2 验证、SDF 测试障碍物和数值测距。
+- 未完成：完整建图场景、RViz2 配置保存和 slam_toolbox 集成。
+- 典型问题：混淆 Link、Joint、Sensor 与 Topic；Gazebo 默认 Frame 名称与 TF 树不匹配；初次面对 SDF 层级时无法独立写出完整模型。
+- 根本原因：机器人实体、坐标系、通信通道和 XML 层级属于不同抽象层，需要分别确认名称和数据归属。
+- 已掌握：能够沿“障碍物 → Gazebo 传感器 → Bridge → `/scan` → TF → RViz2”解释完整数据流，并使用理论距离核验传感器结果。
+- 仍需巩固：独立编写 SDF 模型、QoS 兼容规则、LaserScan 数组处理和真实传感器误差。
+
+### 当日面试题（待回答）
+
+1. `lidar_link`、Gazebo `lidar_sensor` 和 ROS 2 `/scan` 分别是什么？
+2. 为什么 Gazebo 中存在 `/scan`，ROS 2 中却可能没有？
+3. 为什么 ROS 2 `/scan` 已有数据，RViz2 仍可能无法显示？
+4. LaserScan 的 `header.frame_id` 为什么不能随意写成 `base_link`？
+5. `inf`、`range_min` 和 `range_max` 分别有什么含义？
+6. 为什么扫描平面障碍物时，中间距离小、两侧距离大？
+7. 你会如何证明雷达链路不是只做到了“看起来能运行”？
+
+### 当日算法题（待完成）
+
+- 给定 `std::vector<float> ranges`、`range_min` 和 `range_max`，统计有效测距数量并返回最小有效距离；需要忽略 `inf`、NaN 和量程外数据。
+
+### 下一学习日方向
+
+1. 保存并复用 RViz2 配置，减少每次手工添加显示项。
+2. 扩展项目世界，使其具有适合二维建图的墙体和障碍物特征。
+3. 在传感器、里程计和 TF 完整的基础上接入 slam_toolbox。

@@ -39,9 +39,11 @@
 - [x] 发布并桥接驱动轮 `/joint_states`，补全 Wheel Link 动态 TF。
 - [x] 添加 `lidar_link`、固定 TF 和 GPU Lidar 传感器模型。
 - [x] 创建带 Sensors 系统的项目自有世界，并验证 Gazebo `/scan`。
-- [ ] 将 Gazebo `/scan` 桥接为 ROS 2 `sensor_msgs/msg/LaserScan`。
-- [ ] 检查 ROS 2 `/scan` 的消息内容、频率、QoS 和 `frame_id`。
-- [ ] 在 RViz2 中显示 LaserScan，并验证运动过程中的 TF 对齐。
+- [x] 将 Gazebo `/scan` 桥接为 ROS 2 `sensor_msgs/msg/LaserScan`。
+- [x] 检查 ROS 2 `/scan` 的消息内容、频率、QoS 和 `frame_id`。
+- [x] 使用 `override_frame_id` 将扫描坐标系统一为 `lidar_link`，并验证 TF 可查询。
+- [x] 在 RViz2 中显示 LaserScan，加入测试障碍物并验证约 1.75 m 的正前方测距。
+- [ ] 扩展可用于建图的静态障碍物场景。
 
 ## 后续任务
 

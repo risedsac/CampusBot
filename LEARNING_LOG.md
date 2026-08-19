@@ -280,3 +280,45 @@
 - `/scan` 的实际 `angle_increment`、发布频率、QoS 和 `header.frame_id`。
 - RViz2 LaserScan 显示以及 `lidar_link` TF 对齐检查。
 - 在世界中加入可用于建图的障碍物，并理解仿真分辨率、噪声和真实雷达误差的区别。
+
+## 2026-08-19——ROS 2 LaserScan、Frame 对齐与障碍物测距
+
+### 已完成
+
+- 使用 `ros_gz_bridge` 将 Gazebo `ignition.msgs.LaserScan` 转换为 ROS 2 `sensor_msgs/msg/LaserScan`。
+- 将 Scan Bridge 接入顶层 `simulation.launch.py`，不再需要手动启动桥接进程。
+- 检查 `/scan` 的发布端点、QoS、频率、角度范围、距离范围和数组长度。
+- 发现 Gazebo 默认生成的作用域 Frame 名称不属于机器人 TF 树，使用 Bridge 的 `override_frame_id` 将消息统一为 `lidar_link`。
+- 使用 `tf2_echo base_link lidar_link` 验证固定变换为 Z 方向 `0.12 m`。
+- 在项目世界中加入橙色静态长方体，同时定义一致的 Visual 与 Collision。
+- 在 Gazebo 中观察障碍物，在 RViz2 中观察红色扫描线，并读取 `/scan` 数组验证实际测距。
+
+### 验证证据
+
+- `/scan` 的 Publisher 为 `scan_bridge`，消息类型为 `sensor_msgs/msg/LaserScan`。
+- 实测发布频率约为 `9.91～9.92 Hz`，与传感器配置的 10 Hz 一致。
+- 一帧消息包含 360 个 `ranges`，角度范围约为 `-π～+π`，量程为 `0.12～12 m`。
+- `ros2 param get /scan_bridge override_frame_id` 返回 `lidar_link`，消息头中的 `frame_id` 同样为 `lidar_link`。
+- RViz2 LaserScan 状态为 `OK`，能够显示测试障碍物形成的红色扫描线。
+- 障碍物正面理论位置为 `2.0 - 0.5 / 2 = 1.75 m`，实测最近扫描距离约为 `1.7501 m`。
+
+### 排错与根本原因
+
+- `/scan` 最初有数据但 Frame 为 `campusbot/base_footprint/lidar_sensor`；该名称不在 TF 树中，因此 RViz2 无法可靠完成坐标变换。
+- 没有添加虚假的静态 TF，而是把传感器消息的 Frame 统一为已有的安装坐标系 `lidar_link`，使消息语义与 URDF 保持一致。
+- `tf2_echo` 启动瞬间曾报告 Frame 不存在，随后持续输出正确变换；这是节点发现和 TF 数据到达前的短暂状态，不是最终连接失败。
+- 当前 ROS 2 CLI 将 `ranges` 输出为单行 `array('f', [...])`，因此按输出行号截取中间元素的方法不适用。
+
+### 关键理解
+
+- LaserScan 的每个距离值都必须结合对应角度和 `header.frame_id` 才有空间意义；Topic 有数据并不代表 RViz2 一定能显示。
+- `inf` 表示该方向在有效量程内没有获得碰撞返回，不代表 Bridge 或传感器报错。
+- 平面障碍物正前方距离最短，越靠两侧射线越倾斜，测得斜距越长。
+- 360 是偶数，最接近零度的是两束对称射线，因此数组中央出现两个几乎相同的最小距离。
+- SDF 中 Visual 决定可见外观，Collision 决定射线和物理碰撞；两者不一致会造成“看到的位置”和“测到的位置”不同。
+
+### 仍需继续巩固
+
+- LaserScan QoS 的请求与提供兼容关系，以及 slam_toolbox 的订阅要求。
+- 仿真雷达分辨率、噪声模型和真实传感器精度之间的区别。
+- 构建具有足够几何特征的建图世界，并验证机器人运动时扫描与 TF 的连续对齐。
