@@ -10,6 +10,7 @@ def generate_launch_description():
                                                    "urdf","campusbot.urdf.xacro"])
 
     robot_description = Command(['xacro ',description_xacro_file])
+    rviz_config_file = PathJoinSubstitution([FindPackageShare("campusbot_bringup"),"rviz","simulation.rviz"])
 
 # 下面gazebo_launch_file->gazebo_sim相当于下边终端命令
 # ros2 launch ros_gz_sim gz_sim.launch.py gz_args:="-r empty.sdf"
@@ -35,7 +36,6 @@ def generate_launch_description():
               "gz_args": ["-r ",campus_world_file],
           }.items(),
       )
-
     robot_state_publisher = Node(
             package="robot_state_publisher",
             executable="robot_state_publisher",
@@ -126,6 +126,15 @@ def generate_launch_description():
                 {"override_frame_id": "lidar_link"},
                 ],
             )
+    rviz_config = Node(
+            package="rviz2",
+            executable="rviz2",
+            arguments=["-d",rviz_config_file],
+            parameters=[{"use_sim_time": True}],
+            output = "screen",
+            )
+
+
     return LaunchDescription([gazebo_sim,
                               robot_state_publisher,
                               spawn_robot,
@@ -135,4 +144,5 @@ def generate_launch_description():
                               tf_bridge,
                               joint_states_bridge,
                               scan_bridge,
+                              rviz_config,
                               ])

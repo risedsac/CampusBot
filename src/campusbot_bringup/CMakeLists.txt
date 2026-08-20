@@ -4,7 +4,7 @@ project(campusbot_bringup)
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY config launch worlds
+  DIRECTORY config launch worlds rviz
   DESTINATION share/${PROJECT_NAME}
 )
 
