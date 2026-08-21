@@ -322,3 +322,47 @@
 - LaserScan QoS 的请求与提供兼容关系，以及 slam_toolbox 的订阅要求。
 - 仿真雷达分辨率、噪声模型和真实传感器精度之间的区别。
 - 构建具有足够几何特征的建图世界，并验证机器人运动时扫描与 TF 的连续对齐。
+
+## 2026-08-21——静态地图定位与 Nav2 单目标导航
+
+### 已完成
+
+- 使用 slam_toolbox 完成项目场景建图，并保存 `campus_map.pgm` 与 `campus_map.yaml`。
+- 将地图资源安装到 `campusbot_navigation`，使用 Map Server 发布 `/map`。
+- 先手动执行 `configure` 和 `activate` 观察 Lifecycle 状态变化，再使用 Lifecycle Manager 自动管理 Map Server。
+- 配置 AMCL 并通过 RViz2 发布 `/initialpose`，成功获得 `/amcl_pose` 和 `map → odom`。
+- 配置并启动 Nav2 Planner、Controller、BT Navigator、Behavior Server 和 Velocity Smoother。
+- 在 RViz2 中发送 Nav2 Goal，完成多次单目标自主导航验证。
+- 将仿真、建图和导航 RViz2 配置分开，并通过 Launch Argument 选择配置文件。
+
+### 验证证据
+
+- 保存地图的分辨率为 `0.05 m`，宽高均为 `118` 个栅格，对应约 `5.9 m × 5.9 m`。
+- Map Server 激活后，`/map` Publisher 数量为 1，QoS 为 `RELIABLE + TRANSIENT_LOCAL`。
+- `map_server` 与 `amcl` 的 Lifecycle 状态均为 `active [3]`。
+- `/amcl_pose` 输出地图坐标系中的估计位姿和协方差。
+- `tf2_echo map odom` 与 `tf2_echo map base_footprint` 均持续返回有效变换。
+- Nav2 五个主要运行节点均处于 Active 状态，RViz2 点击目标后机器人能够自主到达。
+
+### 排错与根本原因
+
+- Map Server 最初为 `unconfigured`，因此 ROS Graph 中不存在 `/map`；Lifecycle Node 只有配置并激活后才执行主要功能。
+- RViz2 使用 `map` 作为 Fixed Frame 时机器人最初无法正常显示；原因是只有 `odom → base_footprint`，缺少定位模块提供的 `map → odom`。
+- 雷达扫描与旧地图存在少量平行偏差；地图栅格分辨率、建图误差、里程计误差和 AMCL 估计误差都会共同影响重合程度。
+- 目标点太靠近柱子时导航无法完成；机器人中心可达不等于机器人整个轮廓安全，Costmap 会结合机器人半径和障碍膨胀判断目标是否合法。
+
+### 关键理解
+
+- slam_toolbox 用于边运动边估计轨迹并建立地图；Map Server 用于加载和发布已经保存的静态地图。
+- `odom → base_footprint` 提供连续、短期平滑的局部运动；AMCL 用地图和激光观测修正累计误差，并发布 `map → odom`。
+- Planner Server 计算从当前位置到目标的全局路径；Controller Server 根据路径与局部环境持续输出速度控制指令。
+- BT Navigator 组织导航任务流程；Behavior Server 承担旋转、后退等恢复行为；Lifecycle Manager 统一管理节点状态。
+- `TRANSIENT_LOCAL` 使后加入的地图订阅者也能收到发布端保存的最后一份地图。
+- 当前 Gazebo 仍然存在物理接触和摩擦，但模型、传感器、里程计和环境比真机理想；真机会受到轮胎打滑、标定误差、噪声、延迟和动态障碍影响。
+
+### 仍需继续巩固
+
+- AMCL 粒子滤波、协方差和初始位姿不确定性的含义。
+- Global Costmap、Local Costmap、机器人半径与 Inflation Layer 的具体参数关系。
+- Nav2 行为树的数据流和失败恢复流程。
+- `NavigateToPose` Action 的目标、反馈、结果、取消、超时和重试机制。

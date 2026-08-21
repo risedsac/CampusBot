@@ -39,3 +39,12 @@
 - 理由：Gazebo 默认输出的作用域名称 `campusbot/base_footprint/lidar_sensor` 不属于机器人 TF 树；`lidar_link` 才是雷达数据实际安装位置对应的稳定坐标系。
 - 备选方案：修改传感器 SDF 的 Frame 扩展配置，或额外发布静态 TF。当前 Bridge 参数已经在本机版本中完成运行验证，而额外静态 TF 会为同一个物理位置制造不必要的坐标系。
 - 影响：RViz2、slam_toolbox 等 ROS 2 消费者可以通过现有 TF 树转换扫描数据；升级 `ros_gz_bridge` 时需要继续确认该参数可用。
+
+## ADR-006：使用 Map Server、AMCL 与 Nav2 组成静态地图导航链路
+
+- 日期：2026-08-21
+- 状态：已接受
+- 决策：使用 Map Server 加载已保存地图，使用 AMCL 发布 `map → odom`，并复用 Nav2 官方 Bringup 启动规划、控制、行为树和恢复模块。导航基准坐标系使用 `map`，机器人坐标系使用 `base_footprint`。
+- 理由：Map Server、AMCL 和 Nav2 的职责边界清晰，符合 ROS 2 Humble 的标准导航架构；复用官方 Bringup 可以把学习重点放在参数、数据流和后续自定义任务管理模块上。
+- 参数约束：当前圆形机器人半径设为约 `0.35 m`；规划和控制必须考虑机器人实际轮廓，不能只把机器人当作一个质点。
+- 影响：导航前必须同时具备静态地图、初始位姿、`map → odom → base_footprint` 完整 TF、LaserScan 和 Odometry。后续将增加项目顶层 Launch，再由 C++ Action Client 调用 Nav2。

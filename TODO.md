@@ -29,9 +29,9 @@
 - [x] 添加 Gazebo DiffDrive 插件并验证原生速度控制。
 - [x] 使用 `ros_gz_bridge` 将 ROS 2 `/cmd_vel` 桥接到 Gazebo。
 - [x] 使用顶层 Launch 同时启动 Gazebo、机器人模型与速度桥接节点。
-- [ ] 保存可移植的 RViz2 配置并接入 Launch。
+- [x] 保存可移植的 RViz2 配置并接入 Launch。
 
-## 当前里程碑：传感器、里程计与 TF
+## 已完成里程碑：传感器、里程计与 TF
 
 - [x] 桥接 Gazebo `/clock` 并统一使用仿真时间。
 - [x] 输出并桥接差速驱动里程计 `/odom`。
@@ -43,9 +43,24 @@
 - [x] 检查 ROS 2 `/scan` 的消息内容、频率、QoS 和 `frame_id`。
 - [x] 使用 `override_frame_id` 将扫描坐标系统一为 `lidar_link`，并验证 TF 可查询。
 - [x] 在 RViz2 中显示 LaserScan，加入测试障碍物并验证约 1.75 m 的正前方测距。
-- [ ] 扩展可用于建图的静态障碍物场景。
+- [x] 扩展可用于建图的静态障碍物场景。
+
+## 已完成里程碑：建图、定位与单目标导航
+
+- [x] 使用 slam_toolbox 建立二维占据栅格地图。
+- [x] 保存地图 PGM 与 YAML 文件，并理解主要字段。
+- [x] 使用 Map Server 加载静态地图。
+- [x] 使用 Lifecycle Manager 自动配置并激活 Nav2 Lifecycle Node。
+- [x] 使用 AMCL 发布 `map → odom`，建立完整定位 TF 链。
+- [x] 配置并启动 Nav2 Planner、Controller、BT Navigator 和恢复行为。
+- [x] 在 RViz2 中发送目标并完成单目标自主导航。
 
 ## 后续任务
 
-- [ ] 集成 slam_toolbox 与 Nav2。
-- [ ] 实现任务管理、路径规划和自动化评测功能包。
+- [ ] 创建一键启动仿真、定位和导航的顶层 Launch。
+- [ ] 使用 C++ 实现 Nav2 `NavigateToPose` Action Client。
+- [ ] 实现多目标任务状态机、超时、取消和重试。
+- [ ] 独立实现 BFS、Dijkstra 与 A* 栅格路径规划。
+- [ ] 接入 `OccupancyGrid`，发布并可视化 `nav_msgs/Path`。
+- [ ] 实现导航自动化评测、CSV 记录与结果可视化。
+- [ ] 持续完善 README、架构说明、测试和面试材料。

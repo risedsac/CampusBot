@@ -444,3 +444,62 @@
 1. 保存并复用 RViz2 配置，减少每次手工添加显示项。
 2. 扩展项目世界，使其具有适合二维建图的墙体和障碍物特征。
 3. 在传感器、里程计和 TF 完整的基础上接入 slam_toolbox。
+
+## 2026-08-21——第 9 天
+
+### 今日目标
+
+1. 使用 Map Server 加载已保存的二维地图，并理解 Lifecycle Node。
+2. 使用 AMCL 建立 `map → odom`，打通静态地图定位链路。
+3. 启动 Nav2，完成 RViz2 单目标自主导航。
+
+### 今日成果
+
+- 将 RViz2 配置参数化，仿真、建图和导航可以使用各自的 RViz2 配置。
+- 使用 Map Server 成功加载 `campus_map.yaml`，并由 Lifecycle Manager 自动配置、激活。
+- 接入 AMCL，通过 RViz2 设置初始位姿后获得 `/amcl_pose` 和 `map → odom`。
+- 接入 Nav2 的规划、控制、行为树、恢复行为和速度平滑等组件。
+- 在 RViz2 中使用 Nav2 Goal 发送目标，小车能够自主规划路径并到达目标。
+- 创建并试用了更复杂的可选仿真世界，但决定暂不把它作为项目主线默认场景。
+
+### 今日知识点
+
+- C++ 语法：本日没有新增 C++ 代码；为后续 `NavigateToPose` Action Client 做系统接口准备。
+- 数据结构与算法：理解全局规划输出路径，局部控制根据局部环境生成速度指令。
+- ROS 2：Map Server、Lifecycle Node、AMCL、`map → odom → base_footprint`、Nav2、全局/局部 Costmap、QoS。
+- Linux 与工具：`ros2 lifecycle get/set`、`ros2 topic info/echo`、`tf2_echo`、`colcon build`。
+- 面试知识：建图与定位的区别、Planner 与 Controller 的区别、地图 Topic 的瞬态本地持久性、目标点不可达的原因。
+
+### 验收结果
+
+- [x] `map_server` 和 `amcl` 均进入 `active` 状态。
+- [x] `/map` 发布 `118 × 118`、分辨率为 `0.05 m` 的 OccupancyGrid。
+- [x] `/amcl_pose` 能够输出机器人在地图中的估计位姿。
+- [x] `tf2_echo map odom` 和 `tf2_echo map base_footprint` 均能持续输出有效变换。
+- [x] Planner Server、Controller Server、BT Navigator、Behavior Server 和 Velocity Smoother 均进入 `active` 状态。
+- [x] 小车能够根据 RViz2 目标自主规划、避障并完成单目标导航。
+
+### 当日复盘
+
+- 已完成：静态地图加载、Lifecycle 自动管理、AMCL 定位、完整 TF 链和 Nav2 单目标导航。
+- 未完成：仿真、定位和导航的一键总 Launch；C++ Nav2 Action Client；多目标任务状态机。
+- 典型问题：Map Server 处于 `unconfigured` 时没有 `/map`；RViz2 固定坐标系设为 `map` 时，缺少 `map → odom` 会导致机器人无法显示；靠近柱子的目标可能因机器人半径和代价地图安全距离而不可达。
+- 根本原因：ROS 2 节点存在不代表节点已经处于可工作状态；导航还要求地图、定位、TF、规划和控制链路同时成立。
+- 已掌握：能够解释 `map → odom → base_footprint` 的职责分工，并能从 Lifecycle、Topic、TF 和 Nav2 Server 四个层次检查导航链路。
+- 仍需巩固：AMCL 粒子滤波原理、Costmap 膨胀参数、Nav2 行为树，以及 Action 的异步反馈与结果处理。
+
+### 当日面试题（待回答）
+
+1. Map Server 与 slam_toolbox 的职责有什么区别？
+2. 为什么 Map Server 启动后可能仍然没有 `/map`？
+3. AMCL 使用哪些输入，主要输出什么，为什么由它发布 `map → odom`？
+4. Nav2 的 Planner Server 与 Controller Server 分别解决什么问题？
+5. 为什么将目标点选在柱子旁边时，机器人可能停住而不是强行靠近？
+6. 为什么 `/map` 适合使用 `TRANSIENT_LOCAL` 持久性策略？
+7. 当前仿真导航效果较好，迁移到真机时会新增哪些误差来源？
+
+### 下一学习日方向
+
+1. 创建 `navigation_bringup.launch.py`，一键启动仿真、定位和导航模块。
+2. 更新 README 中的运行命令和当前项目架构。
+3. 在系统启动稳定后，开始学习 C++ `NavigateToPose` Action Client。
