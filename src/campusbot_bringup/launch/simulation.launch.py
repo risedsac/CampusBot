@@ -1,16 +1,26 @@
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, PathJoinSubstitution
+from launch.substitutions import Command, PathJoinSubstitution,LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument,IncludeLaunchDescription
+
 def generate_launch_description():
     #找到xacro文件
     description_xacro_file = PathJoinSubstitution([FindPackageShare("campusbot_description"),
                                                    "urdf","campusbot.urdf.xacro"])
 
     robot_description = Command(['xacro ',description_xacro_file])
-    rviz_config_file = PathJoinSubstitution([FindPackageShare("campusbot_bringup"),"rviz","simulation.rviz"])
+
+    rviz_config = LaunchConfiguration("rviz_config")
+
+    declare_rviz_config = DeclareLaunchArgument(
+      "rviz_config",
+      default_value="simulation.rviz",
+      description="RViz config filename in campusbot_bringup/rviz",
+    )
+
+    rviz_config_file = PathJoinSubstitution([FindPackageShare("campusbot_bringup"),"rviz",rviz_config])
 
 # 下面gazebo_launch_file->gazebo_sim相当于下边终端命令
 # ros2 launch ros_gz_sim gz_sim.launch.py gz_args:="-r empty.sdf"
@@ -126,7 +136,7 @@ def generate_launch_description():
                 {"override_frame_id": "lidar_link"},
                 ],
             )
-    rviz_config = Node(
+    rviz_node = Node(
             package="rviz2",
             executable="rviz2",
             arguments=["-d",rviz_config_file],
@@ -135,7 +145,10 @@ def generate_launch_description():
             )
 
 
-    return LaunchDescription([gazebo_sim,
+
+    return LaunchDescription([
+                              declare_rviz_config,
+                              gazebo_sim,
                               robot_state_publisher,
                               spawn_robot,
                               cmd_vel_bridge,
@@ -144,5 +157,5 @@ def generate_launch_description():
                               tf_bridge,
                               joint_states_bridge,
                               scan_bridge,
-                              rviz_config,
+                              rviz_node,
                               ])
